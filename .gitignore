@@ -103,3 +103,9 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+# Pipenv
+Pipfile*
+
+# Vim
+.vim
+Session.vim
