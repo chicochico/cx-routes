@@ -25,3 +25,8 @@ class Route(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class RouteLength(BaseModel):
+    route_id: uuid.UUID
+    km: float
