@@ -1,6 +1,8 @@
 import datetime
+import uuid
 
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from routes.db.base_class import Base
@@ -8,18 +10,16 @@ from routes.db.base_class import Base
 
 class Route(Base):
     __tablename__ = "route"
-
-    id = Column(String(length=36), primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    waypoints = relationship("Coordinates", order_by=created_at, back_populates="route")
+    waypoints = relationship("Waypoint", order_by="Waypoint.id", back_populates="route")
 
 
-class Coordinates(Base):
-    __tablename__ = "coordinates"
-
+class Waypoint(Base):
+    __tablename__ = "waypoint"
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     lat = Column(Float)
     lon = Column(Float)
-    route_id = Column(String, ForeignKey("route.id"))
+    route_id = Column(UUID(as_uuid=True), ForeignKey("route.id"))
     route = relationship("Route", back_populates="waypoints")

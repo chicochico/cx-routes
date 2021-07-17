@@ -17,7 +17,7 @@ class TestRoute(object):
     def setup(self):
         self.route_post = requests.post(ROUTE_ENDPOINT)
         route = self.route_post.json()
-        route_id = route["route_id"]
+        route_id = route["id"]
         self._push_route(route_id)
         self.length_get = requests.get(ROUTE_LENGTH_ENDPOINT.format(route_id))
 
