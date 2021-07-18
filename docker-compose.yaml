@@ -25,6 +25,9 @@ services:
       - .:/app
     ports:
       - "8000:8000"
-    command: ["uvicorn", "--host", "0.0.0.0", "--port", "8000", "routes.api:app", "--reload"]
+    command:
+      # run migration first
+      bash -c "$$(cd routes && PYTHONPATH=.. alembic upgrade head)
+      && uvicorn --host 0.0.0.0 --port 8000 routes.api:app --reload"
     stdin_open: true
     tty: true
