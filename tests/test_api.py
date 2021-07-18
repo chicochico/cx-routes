@@ -156,6 +156,11 @@ def test_route_length(client, monkeypatch):
 
 def test_route_length_not_found(client, monkeypatch):
     route_id = uuid.uuid4()
+
+    def mock_get_route_length(*arks, **kwargs):
+        raise crud.NotFoundError
+
+    monkeypatch.setattr(crud, "get_route_length", mock_get_route_length)
     response = client.get(endpoints.ROUTE_LENGTH_ENDPOINT.format(route_id))
     assert response.status_code == 404
 

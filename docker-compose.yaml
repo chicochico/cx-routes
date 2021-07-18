@@ -21,8 +21,8 @@ services:
       - postgres
     environment:
       - DB_URI=postgresql://postgres:postgres@postgres:5432/postgres
-    volumes:
-      - .:/app
+    # volumes:
+    #   - .:/app
     ports:
       - "8000:8000"
     command:
