@@ -54,7 +54,7 @@ def create_waypoint(
 
 
 @app.get("/route/{route_id}/length/", response_model=schemas.RouteLength)
-def calculate_length(route_id: str, db: Session = Depends(get_db)):
+def calculate_length(route_id: uuid.UUID, db: Session = Depends(get_db)):
     try:
         route_length = crud.get_route_length(db=db, route_id=route_id)
         return route_length

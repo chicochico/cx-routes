@@ -1,9 +1,6 @@
 import requests
 
-SERVICE_ENDPOINT = "http://localhost:8000/"
-ROUTE_ENDPOINT = "{}route/".format(SERVICE_ENDPOINT)
-ROUTE_ADD_WAY_POINT_ENDPOINT = "{}{}/waypoint/".format(ROUTE_ENDPOINT, "{}")
-ROUTE_LENGTH_ENDPOINT = "{}{}/length/".format(ROUTE_ENDPOINT, "{}")
+from tests import endpoints
 
 
 class TestRoute(object):
@@ -15,16 +12,17 @@ class TestRoute(object):
     ]
 
     def setup(self):
-        self.route_post = requests.post(ROUTE_ENDPOINT)
+        self.route_post = requests.post(endpoints.ROUTE_ENDPOINT)
         route = self.route_post.json()
         route_id = route["id"]
         self._push_route(route_id)
-        self.length_get = requests.get(ROUTE_LENGTH_ENDPOINT.format(route_id))
+        self.length_get = requests.get(endpoints.ROUTE_LENGTH_ENDPOINT.format(route_id))
 
     def _push_route(self, route_id):
         for coordinates in self.wgs84_coordinates:
             requests.post(
-                ROUTE_ADD_WAY_POINT_ENDPOINT.format(route_id), json=coordinates
+                endpoints.ROUTE_ADD_WAY_POINT_ENDPOINT.format(route_id),
+                json=coordinates,
             )
 
     def test_length_calculation(self):
