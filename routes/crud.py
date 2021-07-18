@@ -1,10 +1,13 @@
-from sqlalchemy import exc
 from sqlalchemy.orm import Session
 
 from routes import models, schemas
 
 
 class NotFoundError(Exception):
+    pass
+
+
+class InvalidRequestError(Exception):
     pass
 
 
@@ -26,12 +29,19 @@ def create_route(db: Session):
 
 def create_waypoint(db: Session, route_id: str, coordinates: schemas.Waypoint):
     point = f"POINT({coordinates.lat} {coordinates.lon})"
-    try:
-        db_coordinates = create_db_instance(
-            db=db, model=models.Waypoint, route_id=route_id, coordinates=point
-        )
-        return db_coordinates
-    except exc.IntegrityError:
+    route = db.query(models.Route).where(models.Route.id == route_id).first()
+    if route:
+        try:
+            db_coordinates = create_db_instance(
+                db=db,
+                model=models.Waypoint,
+                route=route,
+                coordinates=point,
+            )
+            return db_coordinates
+        except ValueError as e:
+            raise InvalidRequestError(str(e))
+    else:
         raise NotFoundError(f"Route with id: {route_id} not found")
 
 

@@ -6,7 +6,7 @@ from geoalchemy2.shape import to_shape
 from geoalchemy2.types import Geography, Geometry
 from sqlalchemy import Column, DateTime, ForeignKey, Integer
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, validates
 
 # from sqlalchemy import select
 from sqlalchemy.sql import cast
@@ -59,3 +59,12 @@ class Waypoint(Base):
     @property
     def lon(self):
         return to_shape(self.coordinates).y
+
+    @validates("route")
+    def validate_route(self, key, route):
+        if not route.created_at.date() == datetime.datetime.utcnow().date():
+            raise ValueError(
+                "Cannot add waypoint to route because the route is closed."
+            )
+        else:
+            return route

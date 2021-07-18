@@ -32,8 +32,10 @@ async def create_waypoint(
             db=db, route_id=route_id, coordinates=coordinates
         )
         return waypoint
-    except crud.NotFoundError:
-        raise HTTPException(status_code=404, detail="Route not found")
+    except crud.NotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except crud.InvalidRequestError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.get("/route/{route_id}/length/", response_model=schemas.RouteLength)
@@ -41,5 +43,5 @@ def calculate_length(route_id: str, db: Session = Depends(get_db)):
     try:
         route_length = crud.get_route_length(db=db, route_id=route_id)
         return route_length
-    except crud.NotFoundError:
-        raise HTTPException(status_code=404, detail="Route not found")
+    except crud.NotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
