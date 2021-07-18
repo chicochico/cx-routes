@@ -1,3 +1,6 @@
+import datetime as dt
+
+from sqlalchemy import exc
 from sqlalchemy.orm import Session
 
 from routes import models, schemas
@@ -54,3 +57,13 @@ def get_route_length(db: Session, route_id: str):
         )
     else:
         raise NotFoundError(f"Route with id: {route_id} not found")
+
+
+def get_longest_route_for_day(db: Session, date: dt.date):
+    if date >= dt.datetime.utcnow().date():
+        raise InvalidRequestError("Can only get longest route for past dates")
+    else:
+        try:
+            return models.Route.get_longest_route_for_day(db=db, date=date)
+        except exc.NoResultFound:
+            raise NotFoundError("No route found")

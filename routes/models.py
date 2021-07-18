@@ -1,15 +1,14 @@
 import datetime
 import uuid
 
-from geoalchemy2 import functions as func
 from geoalchemy2.shape import to_shape
-from geoalchemy2.types import Geography, Geometry
+from geoalchemy2.types import Geography
 from sqlalchemy import Column, DateTime, ForeignKey, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, validates
 
 # from sqlalchemy import select
-from sqlalchemy.sql import cast
+from sqlalchemy.sql import text
 
 from routes.db.base_class import Base
 
@@ -25,21 +24,39 @@ class Route(Base):
         Execute a query to calculate the route
         length with PostGist functions
         """
-        waypoints = (
-            db.query(Waypoint.coordinates)
-            .where(Waypoint.route_id == self.id)
-            .order_by(Waypoint.created_at)
-            .subquery()
-        )
-
-        (length,) = db.query(
-            func.ST_Length(
-                cast(
-                    func.ST_MakeLine(cast(waypoints.c.coordinates, Geometry)), Geography
-                )
-            )
-        ).first()
+        query = f"""
+        select
+            st_length(
+                st_makeline(coordinates::geometry ORDER BY created_at)::geography
+            ) as route_length
+        from waypoint
+        where route_id = '{str(self.id)}'
+        """
+        (length,) = db.execute(text(query)).first()
         return length / 1000
+
+    @staticmethod
+    def get_longest_route_for_day(db, date):
+        """
+        Execute query to get route with longest distance
+        for a certain date in the past
+        """
+        query = f"""
+        select
+            route_id
+            ,st_length(
+                st_makeline(coordinates::geometry ORDER BY created_at)::geography
+            ) as route_length
+        from waypoint
+        where created_at::date = '{date.isoformat()}'
+        group by route_id
+        order by route_length desc
+        fetch first 1 row only
+        """
+        route_id, route_length = db.execute(text(query)).one()
+        route = db.query(Route).get(route_id)
+        route.length_km = route_length / 1000  # in km
+        return route
 
 
 class Waypoint(Base):

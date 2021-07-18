@@ -1,5 +1,5 @@
 import uuid
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -22,6 +22,7 @@ class Waypoint(Coordinates):
 class Route(BaseModel):
     id: uuid.UUID
     waypoints: List[Coordinates] = []
+    length_km: Optional[float]
 
     class Config:
         orm_mode = True
